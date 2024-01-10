@@ -2,7 +2,10 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['bit.ly']
+        domains: [
+            'pbs.twimg.com', 
+        'https://uahjlafejhwinaddsule.supabase.co'
+    ]
     },
 }
 

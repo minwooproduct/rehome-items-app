@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.39.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "dotenv": "^16.3.1",
     "embla-carousel-react": "^8.0.0-rc18",
     "lucide-react": "^0.307.0",
     "next": "14.0.4",
