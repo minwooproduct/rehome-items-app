@@ -4,7 +4,7 @@ const nextConfig = {
     images: {
         domains: [
             'pbs.twimg.com', 
-        'https://uahjlafejhwinaddsule.supabase.co'
+        'uahjlafejhwinaddsule.supabase.co'
     ]
     },
 }

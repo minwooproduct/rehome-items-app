@@ -1,34 +1,39 @@
-"use client";
-
 import React, { useState } from "react";
-
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { supabaseServer } from "@/lib/initSupabase";
+import BlurImage from '@/components/ui/BlurImage'
 
-import { supabaseAdmin } from "@/lib/initSupabase";
+// export default async function Page() {
+//   const { data } = await supabaseServer(cookies).from("images").select();
+//   return <pre>{JSON.stringify(data, null, 2)}</pre>;
+// }
 
-// import { supabaseAdmin } from "@/lib/initSupabase";
-// import BlurImage from "@/components/ui/BlurImage";
+// export async function getStaticProps() {
+//   const { data, error } = await supabaseServer(cookies).from("images").select();
 
-export async function getStaticProps() {
-  const { data } = await supabaseAdmin.from('images').select('*').order('id');
-  return {
-    props: {
-      images: data,
-    },
-  };
-}
+//   console.log("Fetched data:", data);
+//   console.log("Error:", error);
+  
+//   if (error) {
+//     return {
+//       props: {
+//         images: null,
+//         error: error.message,
+//       },
+//     }
+//   } 
 
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
+//   return {
+//     props: {
+//       images: data,
+//     },
+//   }
+// }
+
+// function cn(...classes: string[]) {
+//   return classes.filter(Boolean).join(' ')
+// }
 
 type Image = {
   id: number;
@@ -36,12 +41,14 @@ type Image = {
   imageSrc: string;
   name: string;
   userName: string;
-  createdAt: string;
 };
 
-export default function Gallery({ images }: { images: Image[] }) {
+export default async function Gallery() {
 
-  console.log({images})
+  const { data } = await supabaseServer(cookies).from("images").select();
+
+  const images = data
+
   return (
     <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
       <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
@@ -53,28 +60,4 @@ export default function Gallery({ images }: { images: Image[] }) {
   )
 }
 
-function BlurImage({ image }: { image: Image }) {
-  const [isLoading, setLoading] = useState(true)
 
-  return (
-    <a href={image.href} className="group">
-      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
-        <Image
-          alt=""
-          src={image.imageSrc}
-          layout="fill"
-          objectFit="cover"
-          className={cn(
-            'duration-700 ease-in-out group-hover:opacity-75',
-            isLoading
-              ? 'scale-110 blur-2xl grayscale'
-              : 'scale-100 blur-0 grayscale-0'
-          )}
-          onLoadingComplete={() => setLoading(false)}
-        />
-      </div>
-      <h3 className="mt-4 text-sm text-gray-700">{image.name}</h3>
-      <p className="mt-1 text-lg font-medium text-gray-900">{image.username}</p>
-    </a>
-  )
-}
