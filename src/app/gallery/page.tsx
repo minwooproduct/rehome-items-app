@@ -41,6 +41,8 @@ type Image = {
   imageSrc: string;
   name: string;
   userName: string;
+  price: number;
+  item_description: string;
 };
 
 export default async function Gallery() {
