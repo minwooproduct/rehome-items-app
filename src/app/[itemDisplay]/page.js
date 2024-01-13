@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import React from 'react'
 import { cookies } from "next/headers";
 import { supabaseServer } from '@/lib/initSupabase'
+import ItemDisplayClient from './ItemDisplay'
 
-
-
-export default async function itemDisplay({ params }) {
-    
+export async function retrieveImage ( { params }) {
     // Take the parameter from the url e.g. from "/bicycle" we take value 'bicycle'
     //  Route -> /[itemPage]
     //  URL -> /bicycle
     //  `params` -> { itemPage: 'bicycle'}
-    console.log('params.itemDisplay', params.itemDisplay)
 
+    console.log('params.itemDisplay', params.itemDisplay)
     //  Check if item exists in database
     const { data } = await supabaseServer(cookies)
         .from("images")
@@ -20,6 +17,15 @@ export default async function itemDisplay({ params }) {
         .eq('name', params.itemDisplay)
 
     console.log('data is', data)
+}
 
-    return <></>
+// Server Component
+export default function itemDisplay(props) {
+    // Server-side logic can go here
+    return (
+        <div>
+            {/* Other server-rendered content */}
+            <ItemDisplayClient />
+        </div>
+    );
 }
