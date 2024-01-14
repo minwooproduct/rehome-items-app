@@ -4,12 +4,11 @@ import Image from 'next/image'
 import { useState } from 'react'
 import ItemGallery from './ItemGallery'
 
-//...classes allows this function to accept an indefinite amount of inputs into an array called "classes" that is of type string
-function cn(...classes: string[]){
+function cn(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function BlurImage({ image }: { image: Image }) {
+export default function BlurImage({ image }) {
   const [isLoading, setLoading] = useState(true)
   const [isHovering, setHovering] = useState(false)
   const [isItemGalleryOpen, setItemGalleryOpen] = useState(false)
@@ -20,7 +19,6 @@ export default function BlurImage({ image }: { image: Image }) {
   }
   const closeGallery = () => setItemGalleryOpen(false)
 
-  // Interface
   return (
     <a href={image.href} className="group" onClick={openGallery}>
       <div 
@@ -40,8 +38,7 @@ export default function BlurImage({ image }: { image: Image }) {
               ? 'scale-110 blur-2xl grayscale'
               : 'scale-100 blur-0 grayscale-0'
           )}
-          onLoadingComplete={() => setLoading(false)}
-          
+          onLoad={() => setLoading(false)}
         />
         {isHovering && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white p-4 duration-50 ease-in-out group-hover:opacity-75">
@@ -52,6 +49,6 @@ export default function BlurImage({ image }: { image: Image }) {
       </div>
       <h3 className="mt-4 text-lg text-gray-700">{image.name}</h3>
       <p className="mt-1 text-lg font-medium text-gray-900">{image.price}</p>
-  </a>
+    </a>
   )
 }
