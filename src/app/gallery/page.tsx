@@ -35,7 +35,7 @@ type Image = {
 };
 
 export default function Gallery() {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<Image[]>([]);
 
   useEffect(() => {
     getImages().then((result) => {
