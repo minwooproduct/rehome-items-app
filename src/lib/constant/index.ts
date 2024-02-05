@@ -1,0 +1,1 @@
+export const FILE_POND_BUCKET = 'images'

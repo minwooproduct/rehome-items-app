@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/initSupabase";
+import { UserButton } from "@clerk/nextjs";
+import TopNavBar from "@/components/ui/TopNavBar";
 
 export async function getImages() {
   const supabaseAdmin = createClient(
@@ -46,11 +48,14 @@ export default function Gallery() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-      <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-        {images?.map((image) => (
-          <BlurImage key={image.id} image={image} />
-        ))}
+    <div>
+      <div className="mx-auto max-w-2xl pt-2 px-2 sm:pt-6 sm:px-4 lg:max-w-7xl lg:px-4">
+        <TopNavBar/>
+        <div className="mt-2 mb-2 sm:mt-4 sm:mb-4 md:mt-6 md:mb-6 lg:mt-8 lg:mb-8 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+          {images?.map((image) => (
+            <BlurImage key={image.id} image={image} />
+          ))}
+        </div>
       </div>
     </div>
   );
