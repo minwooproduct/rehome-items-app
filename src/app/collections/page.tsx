@@ -15,7 +15,7 @@ A user holds collections, which holds the images they would like to sell.
 - When collections page is loaded, check all collections under logged in user_id
 - Populate the grid
 - If the user has more than 3 collections, remove "+" add button.
-- If user has less than 3 collections, show "+" button to create collections
+- If user has 3 or less collections, show "+" button to create collections
 
 */
 
@@ -33,6 +33,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { ReloadIcon } from "@radix-ui/react-icons";
 /* */
 
 /* FUNCTIONS */
@@ -41,7 +42,7 @@ import { v4 as uuidv4 } from "uuid";
 
 /* CONNECTIONS */
 import { supabaseClient } from "@/lib/initSupabase";
-import { PostgrestError } from "@supabase/supabase-js";
+import { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 /* */
 
 /* USER RELATED */
@@ -49,28 +50,88 @@ import { useUser } from "@clerk/nextjs";
 /* */
 
 /* INTERFACES */
-interface CollectionsResult {
-  checkCollectionsData: any[];
-  checkCollectionsErrors: PostgrestError | null;
+interface FetchCollectionsResult {
+  fetchCollectionsData: any[];
+  fetchCollectionsErrors: PostgrestError | null;
   canCreateMoreCollections: boolean;
 }
+
+interface Collection {
+  collection_id: String;
+  collection_name: String;
+  user_id: String;
+  created_at: String;
+}
+
+/* ON LOAD FUNCTIONS */
+
+async function fetchCollections(
+  supabaseClient: SupabaseClient,
+  userId: string
+) {
+  //Define types
+  let fetchCollectionsData: any[] = [];
+  let fetchCollectionsErrors: PostgrestError | null = null;
+
+  //Pull all collections under that user's name
+  const response = await supabaseClient
+    .from("collections")
+    .select("*")
+    .eq("user_id", userId);
+
+  //If errors return with errors
+  if (response.error) {
+    console.log("Fetch collections failed", response.error);
+    fetchCollectionsErrors = response.error;
+  } else {
+    fetchCollectionsData = response.data || [];
+    console.log("fetchCollectionsData is", fetchCollectionsData);
+  }
+
+  //If user is permitted to create a collection, then return the data
+  return {
+    fetchCollectionsData,
+    fetchCollectionsErrors,
+  };
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+
+/* PAGE COMPONENT LAYER */
+
+/* ---------------------------------------------------------------------------------------------------- */
 
 export default function Collections() {
   /* HOOKS */
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [collectionName, setCollectionName] = useState("");
   const { toast } = useToast();
-
-  /* User Check */
   const { user, isLoaded, isSignedIn } = useUser();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [collectionsUpdateCount, setCollectionsUpdateCount] = useState(0);
+
   useEffect(() => {
-    if (isLoaded) {
-      console.log("user is", user);
-    }
-  }, [isLoaded, user]); //Tells react to run the useEffect when isLoaded changes or when the user changes
+    const initFetch = async () => {
+      if (isLoaded && isSignedIn && user) {
+        const { fetchCollectionsData, fetchCollectionsErrors } =
+          await fetchCollections(supabaseClient, user.id);
+        setCollections(fetchCollectionsData);
+      }
+    };
+    initFetch();
+  }, [isLoaded, isSignedIn, user, supabaseClient, collectionsUpdateCount]); //Tells react to run the useEffect when isLoaded changes or when the user changes
 
   if (!isLoaded) {
-    return <div>Loading user data...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="flex justify-cetner items-center h-screen">
+          <Button disabled>
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            Loading your awesome collections!
+          </Button>
+        </div>
+      </div>
+    );
   }
   if (!isSignedIn || !user) {
     return <div>Please sign in or wait for user data to load.</div>;
@@ -92,66 +153,33 @@ export default function Collections() {
 
   /* ---------------------------------------------------------------------------------------------------- */
 
-  const fetchCollections = async (): Promise<CollectionsResult> => {
-    //Define types
-    let checkCollectionsData: any[] = [];
-    let checkCollectionsErrors: PostgrestError | null = null;
+  const createCollection = async () => {
+    console.log("within createCollection, collections is:", collections);
 
-    //Pull all collections under that user's name
-    const response = await supabaseClient
-      .from("collections")
-      .select("*")
-      .eq("user_id", user.id);
-
-    //If errors return with errors
-    if (response.error) {
-      console.log("Fetch collections failed", response.error);
-      toast({
-        title: "Error",
-        description: `Fetch collections failed: ${response.error}`,
-        duration: 5000,
-      });
-      checkCollectionsErrors = response.error;
-    } else {
-      checkCollectionsData = response.data || [];
-    }
-    //Else if the user does have collections take a count. If the user has more than 3 collections - show error
-    const collectionsCount = checkCollectionsData
-      ? checkCollectionsData.length
-      : 0;
-    if (collectionsCount > 3) {
-      console.log("User has more than 3 collections.");
+    //Check if the user is permitted to create more than 3 collections
+    if (collections.length >= 3) {
+      console.log(
+        "User has more than 3 collections and is not permitted to create anymore."
+      );
       toast({
         title: "🤔 Oh no! Collection could not be created.",
-        description:
-          `You've reached your 3 collection limit. 
-          Please make space and try again.`,
+        description: `You already have 3 collections. Please make space.`,
         duration: 5000,
       });
-      return {
-        checkCollectionsData,
-        checkCollectionsErrors,
-        canCreateMoreCollections: false,
-      };
+      return;
     }
 
-    //If user is permitted to create a collection, then return the data
-    return {
-      checkCollectionsData,
-      checkCollectionsErrors,
-      canCreateMoreCollections: true,
-    };
-  };
-
-  /* ---------------------------------------------------------------------------------------------------- */
-
-  const createCollection = async () => {
-    //Connect to supabase and pull in existing collections
-    const { checkCollectionsData, checkCollectionsErrors, canCreateMoreCollections } = await fetchCollections();
-
-    if(!canCreateMoreCollections){
-        console.log("User has more than 3 collections and is not permitted to create anymore.")
-        return;
+    //Locally check if the user is creating a collection with a unique name
+    if (collections.some((item) => item.collection_name === collectionName)) {
+      console.log(
+        "Failed to create existing collections because a collection already exists with that name."
+      );
+      toast({
+        title: "🤔 Oh no! Collection could not be created.",
+        description: `You already have a collection with the name '${collectionName}'. Please try another name.`,
+        duration: 5000,
+      });
+      return;
     }
 
     //If number of existing collections <3 then continue by creating a new collection in supabase
@@ -183,7 +211,8 @@ export default function Collections() {
       });
     }
 
-    //Reset states
+    //State changes
+    setCollectionsUpdateCount((prevCount) => prevCount + 1);
     setCollectionName(""); //Reset the collections name
   };
 
