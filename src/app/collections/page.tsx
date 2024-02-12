@@ -36,8 +36,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { ReloadIcon } from "@radix-ui/react-icons";
 /* */
 
-/* FUNCTIONS */
+/* UTILITY */
 import { v4 as uuidv4 } from "uuid";
+import { useRouter } from 'next/navigation'
 /* */
 
 /* CONNECTIONS */
@@ -57,10 +58,10 @@ interface FetchCollectionsResult {
 }
 
 interface Collection {
-  collection_id: String;
-  collection_name: String;
-  user_id: String;
-  created_at: String;
+  collection_id: string;
+  collection_name: string;
+  user_id: string;
+  created_at: string;
 }
 
 /* ON LOAD FUNCTIONS */
@@ -109,6 +110,7 @@ export default function Collections() {
   const { user, isLoaded, isSignedIn } = useUser();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [collectionsUpdateCount, setCollectionsUpdateCount] = useState(0);
+  const router = useRouter()
 
   useEffect(() => {
     const initFetch = async () => {
@@ -224,45 +226,55 @@ export default function Collections() {
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="flex px-4 py-4 justify-center ">Hello world</div>
-      <div>
-        <Popover open={isPopoverOpen}>
-          <PopoverTrigger asChild onClick={togglePopover}>
-            <Button variant="outline">+</Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium leading-none">Create Collection</h4>
-              </div>
-              <div className="grid gap-2">
-                <div className="grid grid-cols-3 items-center gap-4">
-                  <Label htmlFor="width">Name</Label>
-                  <Input
-                    id="width"
-                    defaultValue=""
-                    className="col-span-2 h-8"
-                    onChange={(e) => {
-                      setCollectionName(e.target.value);
-                    }}
-                  />
+      <div className="flex justify-center items-center h-screen ">
+        <div className="">
+          <Popover open={isPopoverOpen}>
+            <PopoverTrigger asChild onClick={togglePopover}>
+              <Button variant="outline">+</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium leading-none">
+                    Create Collection
+                  </h4>
+                </div>
+                <div className="grid gap-2">
+                  <div className="grid grid-cols-3 items-center gap-4">
+                    <Label htmlFor="width">Name</Label>
+                    <Input
+                      id="width"
+                      defaultValue=""
+                      className="col-span-2 h-8"
+                      onChange={(e) => {
+                        setCollectionName(e.target.value);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="">
               <div className="">
-                <Button
-                  onClick={() => {
-                    createCollection();
-                    togglePopover();
-                  }}
-                >
-                  Create
-                </Button>
+                <div className="">
+                  <Button
+                    onClick={() => {
+                      createCollection();
+                      togglePopover();
+                    }}
+                  >
+                    Create
+                  </Button>
+                </div>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="">
+          {collections.map((collection) => (
+            <Button key={collection.collection_id} onClick={() => router.push(`/collections/${collection.collection_id}`)}>
+              {collection.collection_name}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );
